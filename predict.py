@@ -95,6 +95,9 @@ def compute_accuracy(predictions, gt_path):
             y_true.append(gt[fname])
             y_pred.append(pred)
 
+    if len(y_true) == 0:
+        return None
+
     accuracy = sum(1 for t, p in zip(y_true, y_pred) if t == p) / len(y_true)
     print(f" Accuracy: {accuracy:.4f} ({sum(1 for t, p in zip(y_true, y_pred) if t == p)}/{len(y_true)})")
     return accuracy
