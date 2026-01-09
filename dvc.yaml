@@ -1,0 +1,40 @@
+stages:
+  prepare:
+    cmd: python run.py prepare
+    deps:
+      - run.py
+      - stages/prepare.py
+      - data/raw/train_gt.json
+      - config.yaml
+      - utils/config.py
+    outs:
+      - data/prepared
+
+  train:
+    cmd: python run.py train --config config.yaml --verbose
+    deps:
+      - run.py
+      - stages/train.py
+      - src/
+      - data/prepared
+      - data/raw/train_images
+      - config.yaml
+      - utils/
+    outs:
+      - models/final_model
+      - checkpoints
+      - logs
+
+  evaluate:
+    cmd: python run.py evaluate --model models/final_model/ 
+    deps:
+      - run.py
+      - stages/evaluate.py
+      - models/final_model
+      - data/raw/test_images
+      - data/raw/test_gt.json
+      - config.yaml
+      - utils/config.py
+    outs:
+      - predictions.json
+

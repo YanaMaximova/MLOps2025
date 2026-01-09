@@ -1,0 +1,4 @@
+[core]
+    remote = mygdrive
+['remote "mygdrive"']
+    url = /Users/yana.maksimova/Documents/birds-dvc
