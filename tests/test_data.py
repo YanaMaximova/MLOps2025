@@ -43,10 +43,9 @@ def test_dataset_output_structure(tmp_path):
     img_dir, gt_path, gt = create_mock_dataset(tmp_path)
 
     ds = BirdDataset(
-        mode="train",
+        mode="any",
         gt=gt,
         img_dir=img_dir,
-        fraction=1
     )
     x, y = ds[0]
 
@@ -59,18 +58,13 @@ def test_dataset_output_structure(tmp_path):
     assert isinstance(y, int)
     assert 0 <= y < 50
 
-def test_dataset_empty_class_handling(tmp_path):
-    img_dir = tmp_path / "train_images"
+def test_dataset_missing_file_error(tmp_path):
+    img_dir = tmp_path / "images"
     img_dir.mkdir()
-
-    img = (np.random.rand(200, 300, 3) * 255).astype(np.uint8)
-    imsave(img_dir / "bird0_1.jpg", img)
-    imsave(img_dir / "bird0_2.jpg", img)
-
-    gt = {"bird0_1.jpg": 0, "bird0_2.jpg": 0}
-    ds = BirdDataset(mode="train", gt=gt, img_dir=str(img_dir), fraction=0.5)
-    assert len(ds) == 1
-
-    x, y = ds[0]
-    assert x.shape == (3, 350, 350)
-    assert y == 0
+    
+    gt = {"missing.jpg": 0}
+    
+    ds = BirdDataset(mode="any", gt=gt, img_dir=str(img_dir))
+    
+    with pytest.raises(FileNotFoundError):
+        _ = ds[0]

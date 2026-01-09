@@ -25,8 +25,9 @@
 
 1. Скачайте датасет из гугл-диска и положите папку в корень проекта
 2. Установите все зависимости `pip install -r requirements.txt`  
-3. Запустите обучение `python train.py --config config.yaml --verbose`
-4. Для инференса используйте команду `python predict.py --model models/final_model/ `
+3. подготовьте данные `python run.py prepare`
+3. Запустите обучение `python run.py train --config config.yaml --verbose`
+4. Для инференса используйте команду `python run.py evaluate --model models/final_model/ `
 
 **Дополнительные опции при запуске инференса**:
 ```bash

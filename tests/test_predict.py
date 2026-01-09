@@ -3,7 +3,7 @@ import json
 import torch
 import pytest
 
-from predict import classify, compute_accuracy
+from stages.evaluate import classify, compute_accuracy
 
 
 @pytest.fixture
@@ -54,15 +54,14 @@ class MockBirdModel(torch.nn.Module):
 
 
 def test_postprocess_logits_to_class_id(mock_config, monkeypatch):
-    monkeypatch.setattr("predict.BirdModel", MockBirdModel)
-    monkeypatch.setattr("predict.InferenceDataset", MockDataset)
-    monkeypatch.setattr("predict.DataLoader", MockDataLoader)
+    monkeypatch.setattr("stages.evaluate.BirdModel", MockBirdModel)
+    monkeypatch.setattr("stages.evaluate.InferenceDataset", MockDataset)
+    monkeypatch.setattr("stages.evaluate.DataLoader", MockDataLoader)
 
     preds = classify(
         model_path="any",
         test_img_dir="any",
         config_path=mock_config, 
-        batch_size=1
     )
 
     assert preds == {"img1.jpg": 0}
@@ -83,9 +82,9 @@ def test_classify_empty_test_directory(monkeypatch, mock_config):
         def __init__(self, *args, **kwargs): pass
         def __iter__(self): return iter([])
 
-    monkeypatch.setattr("predict.BirdModel", MockBirdModel)
-    monkeypatch.setattr("predict.InferenceDataset", EmptyDataset)
-    monkeypatch.setattr("predict.DataLoader", EmptyDataLoader)
+    monkeypatch.setattr("stages.evaluate.BirdModel", MockBirdModel)
+    monkeypatch.setattr("stages.evaluate.InferenceDataset", EmptyDataset)
+    monkeypatch.setattr("stages.evaluate.DataLoader", EmptyDataLoader)
 
     preds = classify(
         model_path="any",
@@ -113,7 +112,7 @@ def test_compute_accuracy_empty_gt(mock_gt, tmp_path):
 
 
 def test_classify_nonexistent_test_dir(monkeypatch, mock_config):
-    monkeypatch.setattr("predict.BirdModel", MockBirdModel)
+    monkeypatch.setattr("stages.evaluate.BirdModel", MockBirdModel)
 
     with pytest.raises(FileNotFoundError):
         classify(

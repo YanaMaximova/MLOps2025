@@ -12,6 +12,8 @@ from tqdm import tqdm
 from src.model import BirdModel
 from utils.config import load_config
 
+
+
 class InferenceDataset(Dataset):
     def __init__(self, img_dir, config):
         self.config = config
@@ -54,13 +56,13 @@ class InferenceDataset(Dataset):
         image = torch.from_numpy(image.transpose(2, 0, 1))
         return image, fname
 
-def classify(model_path, test_img_dir, config_path="config.yaml", batch_size=None):
+def classify(model_path, test_img_dir, config_path="config.yaml"):
     config = load_config(config_path)
     model = BirdModel.from_pretrained(model_path, map_location="cpu")
     model.eval()
 
     dataset = InferenceDataset(test_img_dir, config)
-    batch_size = batch_size or config["inference"]["batch_size"]
+    batch_size = config["inference"]["batch_size"]
     dataloader = DataLoader(
         dataset,
         batch_size=batch_size,
@@ -102,27 +104,20 @@ def compute_accuracy(predictions, gt_path):
     print(f" Accuracy: {accuracy:.4f} ({sum(1 for t, p in zip(y_true, y_pred) if t == p)}/{len(y_true)})")
     return accuracy
 
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--model", required=True)
-    parser.add_argument("--test_dir", required=False)
-    parser.add_argument("--config", default="config.yaml")
-    parser.add_argument("--output", default="predictions.json")
-    parser.add_argument("--batch_size", type=int)
-    args = parser.parse_args()
 
-    config = load_config(args.config)
-    test_dir = args.test_dir or config["data"]["test_img_dir"]
-    model = args.model or config["save"]["final_model_path"]
+def main(config_path: str, model: str = None):
+    config = load_config(config_path)
+    if model is None:
+        model = config["save"]["final_model_path"]
+
+    test_dir = config["data"]["test_img_dir"]
 
     preds = classify(
         model_path=model,
         test_img_dir=test_dir,
-        config_path=args.config,
-        batch_size=args.batch_size
+        config_path=config_path,
     )
-
-    with open(args.output, "w") as f:
+    with open(config["inference"]["output"], "w") as f:
         json.dump(preds, f, indent=2)
     compute_accuracy(preds, config["data"]["test_gt_path"])
-    print(f"Saved {len(preds)} predictions to {args.output}")
+    print(f"Saved {len(preds)} predictions to {config['inference']['output']}")

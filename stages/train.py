@@ -28,10 +28,11 @@ def main(config_path: str, verbose: bool = False):
     logger = setup_logging(config)
     logger.info("Starting training")
 
-    set_seed(config["train"]["seed"])
-
-    with open(config["data"]["train_gt_path"], "r") as f:
+    with open(config['data']["prepare_train_gt"]) as f:
         train_gt = json.load(f)
+
+    with open(config['data']["prepare_val_gt"]) as f:
+        val_gt = json.load(f)
 
     train_transform = A.Compose([
         A.HorizontalFlip(p=0.5),
@@ -41,11 +42,10 @@ def main(config_path: str, verbose: bool = False):
 
     ds_train = BirdDataset(
         mode="train", gt=train_gt, img_dir=config["data"]["train_img_dir"],
-        fraction=config["data"]["fraction"], transform=train_transform
+        transform=train_transform
     )
     ds_val = BirdDataset(
-        mode="val", gt=train_gt, img_dir=config["data"]["train_img_dir"],
-        fraction=config["data"]["fraction"]
+        mode="val", gt=val_gt, img_dir=config["data"]["train_img_dir"]
     )
 
     dl_train = DataLoader(ds_train, batch_size=config["train"]["batch_size"], shuffle=True, num_workers=4)
@@ -109,7 +109,7 @@ def main(config_path: str, verbose: bool = False):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--config", type=str, default="config.yaml")
+    parser.add_argument("--config", type=str, default="../config.yaml")
     parser.add_argument("--verbose", action="store_true")
     args = parser.parse_args()
 

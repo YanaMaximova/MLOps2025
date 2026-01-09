@@ -8,7 +8,7 @@ from torch.utils.data import Dataset
 import torch
 
 class BirdDataset(Dataset):
-    def __init__(self, mode, gt, img_dir, fraction=0.8, transform=None):
+    def __init__(self, mode, gt, img_dir, transform=None):
         self._items = []
         self._labels = []
         self._transform = transform
@@ -21,13 +21,7 @@ class BirdDataset(Dataset):
         for img_name, cls in gt.items():
             class_to_images.setdefault(cls, []).append(img_name)
 
-        split = int(fraction * len(class_to_images[next(iter(class_to_images))]))
-        if mode == "train":
-            selected_files = [img for imgs in class_to_images.values() for img in imgs[:split]]
-        elif mode == "val":
-            selected_files = [img for imgs in class_to_images.values() for img in imgs[split:]]
-        else:
-            selected_files = [img for imgs in class_to_images.values() for img in imgs[:2]]
+        selected_files = [img for imgs in class_to_images.values() for img in imgs]
 
         for img_file in selected_files:
             self._items.append(os.path.join(img_dir, img_file))
