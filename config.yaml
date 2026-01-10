@@ -41,3 +41,7 @@ inference:
   num_workers: 4
   device: "auto"
   output: 'predictions.json'
+
+mlflow:
+  tracking_uri: "file:./mlruns"
+  experiment_name: "birds-classification"

@@ -1,0 +1,14 @@
+artifact_uri: file:///Users/yana.maksimova/MLOps2025/mlruns/801470810028261098/032b605c54dc4f1bb5d97c4da86bd139/artifacts
+end_time: 1768002765925
+entry_point_name: ''
+experiment_id: '801470810028261098'
+lifecycle_stage: active
+run_id: 032b605c54dc4f1bb5d97c4da86bd139
+run_name: angry-rat-586
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1767999922667
+status: 3
+tags: []
+user_id: yana.maksimova
