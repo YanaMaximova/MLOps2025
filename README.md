@@ -33,3 +33,4 @@
 3. подготовьте данные `python run.py prepare`
 3. Запустите обучение `python run.py train --config config.yaml --verbose`
 4. Для инференса используйте команду `python run.py evaluate --model models/final_model/ `
+5. `mlflow ui`
