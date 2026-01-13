@@ -33,3 +33,25 @@
 3. подготовьте данные `python run.py prepare`
 3. Запустите обучение `python run.py train --config config.yaml --verbose`
 4. Для инференса используйте команду `python run.py evaluate --model models/final_model/ `
+5. `mlflow ui`
+
+## Docker
+Для билда контейнера выполнить команду
+
+```
+docker build -t bird-predict:v1 .
+```
+
+Запустить образ можно с помощью следующей команды
+
+```
+docker run -it --rm \
+  -v $(pwd)/data/raw/test_images:/input:ro \
+  -v $(pwd):/output \
+  bird-predict:v1 \
+  --model /app/models/final_model/ \
+  --config /app/config.yaml \
+  --test_dir /input \
+  --output /output/preds.json \
+  --batch_size 32
+```
