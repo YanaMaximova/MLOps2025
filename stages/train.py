@@ -1,3 +1,4 @@
+# stages/train.py
 import argparse
 import json
 import torch
@@ -15,6 +16,11 @@ import albumentations as A
 import pytorch_lightning as pl
 from pytorch_lightning.callbacks import EarlyStopping, ModelCheckpoint
 
+# === ДОБАВЛЕНО: MLflow ===
+import mlflow
+from pytorch_lightning.loggers import MLFlowLogger
+
+
 def set_seed(seed):
     random.seed(seed)
     np.random.seed(seed)
@@ -22,6 +28,7 @@ def set_seed(seed):
     torch.cuda.manual_seed_all(seed)
     torch.backends.cudnn.deterministic = True
     torch.backends.cudnn.benchmark = False
+
 
 def main(config_path: str, verbose: bool = False):
     config = load_config(config_path)
@@ -68,7 +75,6 @@ def main(config_path: str, verbose: bool = False):
         mode="max"
     )
 
-
     if torch.backends.mps.is_available():
         accelerator = "mps"
         precision = "32"
@@ -79,25 +85,50 @@ def main(config_path: str, verbose: bool = False):
         accelerator = "cpu"
         precision = "32"
 
+    mlflow_logger = MLFlowLogger(
+        experiment_name=config['mlflow']['experiment_name'],
+        tracking_uri=onfig['mlflow']['tracking_uri'],
+        log_model=False
+    )
+
     trainer = pl.Trainer(
         max_epochs=config["train"]["max_epochs"],
         accelerator=accelerator, 
         devices=1,
         precision=precision, 
-        logger=pl.loggers.CSVLogger("logs", name="birds"),
+        logger=mlflow_logger,
         callbacks=[checkpoint_callback, early_stop_callback],
         deterministic=True,
         enable_progress_bar=verbose,
     )
 
+    mlflow_logger.log_hyperparams({
+        "backbone": config["model"]["backbone"],
+        "num_classes": config["model"]["num_classes"],
+        "pretrained": config["model"]["pretrained"],
+        "batch_size": config["train"]["batch_size"],
+        "lr": config["train"]["lr"],
+        "max_epochs": config["train"]["max_epochs"],
+        "fraction": config["data"]["fraction"],
+        "seed": config["train"]["seed"]
+    })
 
     logger.info("Training started...")
     trainer.fit(model, dl_train, dl_val)
 
-
     final_path = config["save"]["final_model_path"]
     logger.info(f"Saving final model to {final_path}")
     model.save_pretrained(final_path)
+
+    run_id = mlflow_logger.run_id
+    mlflow.set_tracking_uri("file:./mlruns")
+    
+    with mlflow.start_run(run_id=run_id):
+        mlflow.log_artifacts(final_path, artifact_path="model")
+        if os.path.exists("dvc.lock"):
+            mlflow.log_artifact("dvc.lock", artifact_path="dvc")
+        
+        mlflow.log_artifact(config_path, artifact_path="config")
 
     if hasattr(trainer, "callback_metrics"):
         val_acc = trainer.callback_metrics.get("val_acc", "N/A")

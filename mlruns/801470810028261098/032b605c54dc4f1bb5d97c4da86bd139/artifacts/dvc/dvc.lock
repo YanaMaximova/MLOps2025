@@ -1,0 +1,31 @@
+schema: '2.0'
+stages:
+  prepare:
+    cmd: python run.py prepare
+    deps:
+    - path: config.yaml
+      hash: md5
+      md5: fd115cb79d3c6ae05e0778bba4ed9833
+      size: 874
+    - path: data/raw/train_gt.json
+      hash: md5
+      md5: a45b18f6379d1605690af164571b6a76
+      size: 44502
+    - path: run.py
+      hash: md5
+      md5: 8e702e59f0dde06839414afc0371df4e
+      size: 874
+    - path: stages/prepare.py
+      hash: md5
+      md5: 0244c732e80be74515472b36a301c04b
+      size: 1005
+    - path: utils/config.py
+      hash: md5
+      md5: 03332f2f88a92ae211e46063f4988b15
+      size: 163
+    outs:
+    - path: data/prepared
+      hash: md5
+      md5: 601ce03b35f03cdda36db64c2a3fbc0f.dir
+      size: 44504
+      nfiles: 2
